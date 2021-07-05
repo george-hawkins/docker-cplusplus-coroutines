@@ -1,0 +1,25 @@
+#!/bin/bash -ex
+
+cd $(dirname $0)
+
+# Note: cloning a 'git:...' URL would require setting fingerprint validation within Docker (as ssh is involved).
+git clone --recursive https://github.com/andreasbuhr/cppcoro.git
+cd cppcoro
+mkdir build
+cd build
+
+BUILD_TYPE=Release
+
+export CXX='g++-11'
+
+cmake .. \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_CXX_STANDARD=20 \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_INSTALL_PREFIX=/usr
+
+make
+make install
+
+cd ../..
+rm -r cppcoro
