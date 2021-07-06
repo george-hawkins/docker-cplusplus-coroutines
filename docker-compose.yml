@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  hirsute-cplusplus:
+  hirsute-cppcoro:
     user: $UID:$GID
     build:
       context: .
