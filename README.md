@@ -54,6 +54,10 @@ Now, you can compile and run code that uses CppCoro:
     $ docker-compose run hirsute-cplusplus g++-11 -fcoroutines example.cpp
     $ docker-compose run hirsute-cplusplus ./a.out
 
+Take a look at [`example.cpp`](example.cpp), it's very simple and generates the first 30 elements in the Fibonacci sequence (though it doesn't include zero as the first element - for more on whether it should, see the Wikipedia [page](https://en.wikipedia.org/wiki/Fibonacci_number)).
+
+Note: the code is cut from CppCoro test [`generator_tests.cpp`](https://github.com/andreasbuhr/cppcoro/blob/master/test/generator_tests.cpp).
+
 Cleaning up
 -----------
 
