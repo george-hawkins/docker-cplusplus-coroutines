@@ -11,6 +11,8 @@ Coroutine support is not yet available in the 9.x version of `gcc` that's availa
 
 So I decided to create the Docker setup, described below, to create an environment where the CppCoro and the latest version of `gcc` are available such that I can use them almost as conveniently as if they were installed locally.
 
+Note: I use Andreas Buhr's fork of [CppCoro](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#cppcoro---a-coroutine-library-for-c) (for reasons that are covered below).
+
 Setup
 -----
 
@@ -42,10 +44,18 @@ You can build the necessary image up-front:
 
 However, this isn't strictly necessary - if you don't explicitly build the image like this then it will be automatically built the first time it is needed.
 
-Now, you can compile code that uses Andreas Buhr's fork of [CppCoro](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#cppcoro---a-coroutine-library-for-c):
+Note: during build, you'll see warnings from `debconf` that it's `delaying package configuration, since apt-utils is not installed`. This is just a warning and getting things to a state where `debconf` doesn't complain involves more complexity than it's worth.
+
+Using CppCoro
+-------------
+
+Now, you can compile and run code that uses CppCoro:
 
     $ docker-compose run hirsute-cplusplus g++-11 -fcoroutines example.cpp
     $ docker-compose run hirsute-cplusplus ./a.out
+
+Cleaning up
+-----------
 
 If you want to remove the image:
 
