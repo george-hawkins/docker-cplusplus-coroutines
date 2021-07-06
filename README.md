@@ -36,7 +36,11 @@ Your UID is already available as a variable, you just have to export it to make 
 
     $ export UID
 
-  560  docker image rm -f my-coro_hirsute-cplusplus:latest
+You can build the necessary image up-front:
+
+    $ docker-compose build
+
+However, this isn't strictly necessary - if you don't explicitly build the image like this then it will be automatically built the first time it is needed.
 
 Now, you can compile code that uses Andreas Buhr's fork of [CppCoro](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#cppcoro---a-coroutine-library-for-c):
 
@@ -45,7 +49,9 @@ Now, you can compile code that uses Andreas Buhr's fork of [CppCoro](https://git
 
 If you want to remove the image:
 
-    $ docker image rm -f my-coro_hirsute-cplusplus:latest
+    $ docker image rmi -f docker-cplusplus-coroutines_hirsute-cplusplus
+
+Note that image names are of the form `<project>_<service>` where the project name defaults to the containing directory name, i.e. `docker-cplusplus-coroutines` in this case. See the description of the project name in the Docker Compose [overview](https://docs.docker.com/compose/). You can control this with `container_name` in the `.yml` file but it's not recommended (see the Compose file [reference](https://docs.docker.com/compose/compose-file/compose-file-v3/)).
 
 It you want to clean up stopped containers and dangling images:
 
@@ -55,6 +61,10 @@ Scripts
 -------
 
 Take a look at [`Dockerfile`](Dockerfile), [`build-cppcoro`](build-cppcoro) and [`docker-compose.yml`](docker-compose.yml) to see how everything works.
+
+I wanted files, e.g. `a.out`, that were created via Docker to have the same UID and GID as the current user (rather than belonging to `root`). This is achieved by making sure `UID` and `GID` are available as environment variables (as shown above), picking these up as `user` in `docker-compose.yml` and passing `UID` onto the `Dockerfile` as a `build-arg`. In the `Dockerfile`, you'll see that I explicitly create and `chown` the `WORKDIR` directory. I tried various other approaches (including setting `USER`) but this turned out to be the easiest and most flexible. It's actually valid to use a numeric UID with `chown` even if there's no corresponding user - the only reason I add a corresponding user (called `worker`) is because `git` fails if it can't map the UID to a user.
+
+The `Dockerfile` uses the script `build-cppcoro` to clone, build and install the CppCoro library. Usually, I use `git:` URLs when cloning from GitHub. However, this is complicated when using Docker as it involves setting up fingerprint validation (as `ssh` is involved). So, instead I use a `https:` URL. I didn't find the build [instructions](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#building) for building with `cmake` entirely clear and only worked things out by seeing how the [workflow](https://github.com/andreasbuhr/cppcoro/blob/master/.github/workflows/cmake.yml) for the relevant GitHub Action was doing things (after that the instructions became clearer and I could use them to modify things to get the setup I wanted).
 
 CppCoro fork
 ------------

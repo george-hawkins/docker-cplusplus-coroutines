@@ -5,7 +5,7 @@ ARG workspace
 
 COPY build-cppcoro /var/tmp
 
-RUN useradd --create-home --shell /bin/bash --uid $uid worker \
+RUN useradd --uid $uid worker \
     && mkdir $workspace \
     && chown $uid $workspace \
     && apt-get update \
