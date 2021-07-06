@@ -131,4 +131,6 @@ $ docker-compose run hirsute-cppcoro ls -R /usr/include/cppcoro
 * `cppcoroTargets-release.cmake`
 * `cppcoroConfig.cmake`
 
+For more on how to consume CppCoro using `cmake`, search for `find_package` in the CppCoro [`README`](https://github.com/andreasbuhr/cppcoro/blob/master/README.md).
+
 **3.** The static library `libcppcoro.a` ending up under `/usr/lib`.
