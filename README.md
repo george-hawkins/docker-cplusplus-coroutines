@@ -1,15 +1,9 @@
 Using the CppCoro library on Ubuntu 20.04 LTS
 =============================================
 
-I wanted to try out the C++20 coroutines feature.
+I wanted to try out the C++20 coroutines feature. While they added `co_yield` etc. in C++20, they didn't standardize the Coroutines library in time for C++20 and this has been left as a task for C++23. In the meantime, you can use the CppCoro library.
 
-While they added `co_yield` etc. in C++20, they didn't standardize the Coroutines library in time for C++20 and this has been left as a task for C++23.
-
-In the meantime, you can use the CppCoro library.
-
-Coroutine support is not yet available in the 9.x version of `gcc` that's available on the current Ubuntu LTS version, i.e. 20.04.
-
-So I decided to create the Docker setup, described below, to create an environment where the CppCoro and the latest version of `gcc` are available such that I can use them almost as conveniently as if they were installed locally.
+Coroutine support is not yet available in the 9.x version of `gcc` that's available on the current Ubuntu LTS version, i.e. 20.04. So I decided to create the Docker setup, described below, to create an environment where CppCoro and the latest version of `gcc` are available such that I can use them almost as conveniently as if they were installed locally.
 
 Note: I use Andreas Buhr's fork of [CppCoro](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#cppcoro---a-coroutine-library-for-c) (for reasons that are covered below).
 
@@ -58,6 +52,12 @@ Take a look at [`example.cpp`](example.cpp), it's very simple and generates the 
 
 Note: the code is cut from CppCoro test [`generator_tests.cpp`](https://github.com/andreasbuhr/cppcoro/blob/master/test/generator_tests.cpp).
 
+There's only so far you can go with passing command lines to `run`, if you need shell expansions, you have to fall back to:
+
+    $ docker-compose run hirsute-cppcoro /bin/bash -c 'fgrep include /usr/lib/cmake/cppcoro/*'
+
+After googling, there seems to be no other way to expand `$`, `*` etc.
+
 Cleaning up
 -----------
 
@@ -65,7 +65,7 @@ If you want to remove the image:
 
     $ docker image rmi -f docker-cplusplus-coroutines_hirsute-cppcoro
 
-Note that image names are of the form `<project>_<service>` where the project name defaults to the containing directory name, i.e. `docker-cplusplus-coroutines` in this case. See the description of the project name in the Docker Compose [overview](https://docs.docker.com/compose/). You can control this with `container_name` in the `.yml` file but it's not recommended (see the Compose file [reference](https://docs.docker.com/compose/compose-file/compose-file-v3/)).
+Note that image names are of the form `<project>_<service>`, where the project name defaults to the containing directory name, i.e. `docker-cplusplus-coroutines` in this case. See the description of the project name in the Docker Compose [overview](https://docs.docker.com/compose/). You can control this with `container_name` in the `.yml` file but it's not recommended (see the Compose file [reference](https://docs.docker.com/compose/compose-file/compose-file-v3/)).
 
 It you want to clean up stopped containers and dangling images:
 
@@ -78,7 +78,7 @@ Take a look at [`Dockerfile`](Dockerfile), [`build-cppcoro`](build-cppcoro) and 
 
 I wanted files, e.g. `a.out`, that were created via Docker to have the same UID and GID as the current user (rather than belonging to `root`). This is achieved by making sure `UID` and `GID` are available as environment variables (as shown above), picking these up as `user` in `docker-compose.yml` and passing `UID` onto the `Dockerfile` as a `build-arg`. In the `Dockerfile`, you'll see that I explicitly create and `chown` the `WORKDIR` directory. I tried various other approaches (including setting `USER`) but this turned out to be the easiest and most flexible. It's actually valid to use a numeric UID with `chown` even if there's no corresponding user - the only reason I add a corresponding user (called `worker`) is because `git` fails if it can't map the UID to a user.
 
-The `Dockerfile` uses the script `build-cppcoro` to clone, build and install the CppCoro library. Usually, I use `git:` URLs when cloning from GitHub. However, this is complicated when using Docker as it involves setting up fingerprint validation (as `ssh` is involved). So, instead I use a `https:` URL. I didn't find the build [instructions](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#building) for building with `cmake` entirely clear and only worked things out by seeing how the [workflow](https://github.com/andreasbuhr/cppcoro/blob/master/.github/workflows/cmake.yml) for the relevant GitHub Action was doing things (after that the instructions became clearer and I could use them to modify things to get the setup I wanted).
+The `Dockerfile` uses the script `build-cppcoro` to clone, build and install the CppCoro library. Usually, I use `git:` URLs when cloning from GitHub. However, this is complicated when using Docker as it involves setting up fingerprint validation (as `ssh` is involved). So, instead I use a `https:` URL. I didn't find the [instructions](https://github.com/andreasbuhr/cppcoro/blob/master/README.md#building) for building CppCoro with `cmake` entirely clear and only worked things out by seeing how the [workflow](https://github.com/andreasbuhr/cppcoro/blob/master/.github/workflows/cmake.yml) for the relevant GitHub Action was doing things (after that the instructions became clearer and I could use them to modify things to get the setup I wanted).
 
 Normally, I'd try to use an [Alpine docker image](https://hub.docker.com/_/alpine_) but currently even the `edge` Alpine images are pulling in `g++` version 10.3.1 (see [here](https://pkgs.alpinelinux.org/package/edge/main/x86_64/g++) for latest status) rather than 11.1. Hence the use of `ubuntu:hirsute`, i.e. Ubuntu 21.04.
 
@@ -87,7 +87,7 @@ CppCoro fork
 
 All the initial development of CppCoro happened in the [lewissbaker/cppcoro](https://github.com/lewissbaker/cppcoro) repo. However, development there stopped in October 2020 as noted in issue [#170](https://github.com/lewissbaker/cppcoro/issues/170).
 
-Andreas Buhr forked CppCoro and merged various PRs against the original repo that had been ignored.
+Andreas Buhr forked CppCoro and merged various PRs that had been filed against the original repo but had been ignored.
 
 The first main difference is all CppCoro headers pull in a header that essentially includes:
 
